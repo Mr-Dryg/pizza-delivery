@@ -1,0 +1,16 @@
+.pizza-container {
+  position: fixed;
+  z-index: 0;
+  left: 180px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.pizza-row {
+  display: flex;
+  z-index: 0;
+  /* justify-content: space-between; */
+  margin-bottom: 30px;
+  gap: 20px; /* Отступ между карточками */
+}

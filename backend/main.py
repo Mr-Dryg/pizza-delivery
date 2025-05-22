@@ -64,3 +64,38 @@ def signup(data: DataSignUp):
     else:
         db_auth[data.email] = data.password
         return {"message": "Регистрация выполнена успешно"}
+
+
+# from fastapi import UploadFile, File
+# import os
+
+# UPLOAD_DIR = "uploads/pizzas"
+
+# @app.post("/upload-pizza/")
+# async def upload_pizza_image(file: UploadFile = File(...)):
+#     # Создаем папку, если её нет
+#     os.makedirs(UPLOAD_DIR, exist_ok=True)
+    
+#     # Сохраняем файл
+#     file_path = f"{UPLOAD_DIR}/{file.filename}"
+#     with open(file_path, "wb") as buffer:
+#         buffer.write(await file.read())
+    
+#     return {"file_path": file_path}
+
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/static", StaticFiles(directory="uploads"), name="static")
+
+@app.get("/pizzas/")
+def get_pizzas():
+    # Пример данных. В реальности тут запрос к БД.
+    return [
+        {
+            "id": i + 1,
+            "name": "Маргарита",
+            "price": 599,
+            "image_url": "/static/pizzas/margherita.jpg"  # Путь к файлу
+        }
+        for i in range(15)
+    ]
