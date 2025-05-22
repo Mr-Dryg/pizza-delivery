@@ -9,3 +9,5 @@ env
 
 .DS_Store
 .idea/
+
+backend/db/pizza.db
