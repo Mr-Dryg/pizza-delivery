@@ -4,11 +4,16 @@ import './App.css';
 
 export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
     <div className="app">
-      <AuthButton setIsModalOpen={setIsModalOpen}/>
-      {isModalOpen && (<AuthModal setIsModalOpen={setIsModalOpen}/>)}
+      {isLoggedIn ?(
+          <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
+        ):(
+          <AuthButton setIsModalOpen={setIsModalOpen}/>
+        )}
+      {isModalOpen && (<AuthModal setIsModalOpen={setIsModalOpen} setIsLoggedIn={setIsLoggedIn}/>)}
     </div>
   );
 }
