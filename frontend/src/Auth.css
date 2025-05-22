@@ -60,6 +60,7 @@
 }
 
 .success-message {
+  text-align: center;
   background-color: #d4edda;
   color: #155724;
   padding: 10px;
@@ -69,6 +70,7 @@
 }
 
 .error-message {
+  text-align: center;
   background-color: #f8d7da;
   color: #721c24;
   padding: 10px;

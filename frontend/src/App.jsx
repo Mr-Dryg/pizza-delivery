@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {AuthButton, AuthModal} from './Auth.jsx';
+import {AuthButton, AuthModal, LogOutButton} from './Auth.jsx';
 import './App.css';
 
 export default function App() {

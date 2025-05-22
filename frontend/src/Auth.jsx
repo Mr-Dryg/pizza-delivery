@@ -35,7 +35,7 @@ function LogInModal({
       </form>
       {signSuccess && (
         <div className="success-message">
-          Регистрация прошла успешно!
+          Авторизация прошла успешно!
           <button onClick={handleCloseSuccessMessage}>Ok</button>
         </div>
       )}
@@ -115,7 +115,7 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
     setSignError(null);
 
     try {
-      const response = await fetch('/api/log-in', {
+      const response = await fetch('http://127.0.0.1:8000/api/log-in', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -132,7 +132,8 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
       } else {
         console.error('Ошибка при отправке данных:', response.status);
         const errorData = await response.json();
-        setSignError(errorData.message || "Ошибка входа");
+        console.log(errorData)
+        setSignError(errorData.detail || "Ошибка входа");
       }
     } catch (error) {
       console.error('Ошибка сети:', error);
@@ -152,7 +153,7 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
     setSignError(null);
 
     try {
-      const response = await fetch('/api/sign-up', {
+      const response = await fetch('http://127.0.0.1:8000/api/sign-up', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -170,7 +171,7 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
       } else {
         console.error('Ошибка при отправке данных:', response.status);
         const errorData = await response.json();
-        setSignError(errorData.message || "Ошибка регистрации");
+        setSignError(errorData.detail || "Ошибка регистрации");
       }
     } catch (error) {
       console.error('Ошибка сети:', error);
