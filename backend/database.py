@@ -17,3 +17,4 @@ from crud.pizza import Pizza
 # db_create_order = Order().create(1, 'moscow', {1: 2})
 # db_orders = Order().read(order_id=1)
 # print(db_add_pizza, db_create_order, db_auth, db_orders)
+print(Pizza().read_all())

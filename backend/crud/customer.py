@@ -26,7 +26,7 @@ class Customer:
             return 'integrity error'
 
     def read(self, customer_id: int):
-        self.cursor.execute("SELECT * FROM customer WHERE user_id = ?", (customer_id,))
+        self.cursor.execute("SELECT * FROM users WHERE user_id = ?", (customer_id,))
         return self.cursor.fetchone()
 
     def update(self):
@@ -86,7 +86,7 @@ class Customer:
         user = self.cursor.fetchone()
 
         if user:
-            return True
+            return 'success'
         else:
             self.cursor.execute("SELECT user_id FROM users WHERE login = ?", (login,))
             if self.cursor.fetchone():

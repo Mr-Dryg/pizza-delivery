@@ -95,3 +95,9 @@ class Pizza:
     def delete(self):
         pass
 
+    def read_all(self):
+        self.cursor.execute(
+            """SELECT pizza_id, name, description, cost, available FROM pizza"""
+        )
+
+        return self.cursor.fetchone()
