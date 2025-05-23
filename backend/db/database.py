@@ -1,15 +1,16 @@
 import sqlite3
 import os
 
-db = sqlite3.connect('pizza.db')
+def get_db_path():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_dir, 'pizza.db')
 
+DB_PATH = get_db_path()
+db = sqlite3.connect(DB_PATH)
 c = db.cursor()
 
 def get_connection():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    db_path = os.path.join(base_dir, 'db', 'pizza.db')
-    return sqlite3.connect(db_path)
-
+    return sqlite3.connect(DB_PATH)
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS users (
