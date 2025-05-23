@@ -1,7 +1,7 @@
 .pizza-container {
-  position: fixed;
+  /* position: fixed;
   z-index: 0;
-  left: 180px;
+  left: 180px; */
   max-width: 1500px;
   margin: 0 auto;
   padding: 20px;

@@ -87,6 +87,14 @@ from fastapi.staticfiles import StaticFiles
 
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
+@app.get("/pizzas/{pizzaId}")
+def get_pizza_description(pizzaId):
+    # Получение описания пиццы
+    desc = "Классическая итальянская пицца с тонкой основой," + \
+    " томатным соусом, нежным сыром моцарелла и ароматным базиликом"
+    return desc
+
+
 @app.get("/pizzas/")
 def get_pizzas():
     # Пример данных. В реальности тут запрос к БД.

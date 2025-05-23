@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AuthButton, AuthModal, LogOutButton } from './Auth.jsx';
+import { AuthButton, AuthModal, LogOutButton } from './components/Auth.jsx';
+import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
 import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
 import './styles/App.css';
 
@@ -8,7 +9,8 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pizzas, setPizzas] = useState([]);
   const pizzaRows = [];
-  const [indexPizzaOpen, setIndexPizzaOpen] = useState(0);
+  const [indexPizzaOpen, setIndexPizzaOpen] = useState(null);
+
 
   useEffect(() => {
     fetch("http://localhost:8000/pizzas/")
@@ -22,37 +24,32 @@ export default function App() {
   }
 
   return (
-    <>
-      <AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>
-      {pizzas.length && indexPizzaOpen != null && (
+    <div>
+      {isLoggedIn ?(
+        <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
+      ):(
+        <AuthButton setIsAuthModalOpen={setIsAuthModalOpen}/>
+      )}
+      {isAuthModalOpen && (<AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>)}
+      {indexPizzaOpen != null && (
         <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
       )}
-    </>
-    // <div>
-    //   {isLoggedIn ?(
-    //     <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
-    //   ):(
-    //     <AuthButton setIsAuthModalOpen={setIsAuthModalOpen}/>
-    //   )}
-    //   {isAuthModalOpen && (<AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>)}
-    //   {pizzas.length && indexPizzaOpen != null && (
-    //     <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
-    //   )}
-    //   <div className="pizza-container">
-    //     {pizzaRows.map((row, rowIndex) => (
-    //       <div key={`row-${rowIndex}`} className="pizza-row">
-    //         {row.map((pizza, pizzaIndex) => (
-    //           <PizzaCard
-    //             key={pizza.id}
-    //             pizza={pizza}
-    //             pizzaIndex={pizzaIndex + rowIndex * PIZZAS_PER_ROW}
-    //             // pizzaIndex={0}
-    //             setIndexPizzaOpen={setIndexPizzaOpen}
-    //           />
-    //         ))}
-    //       </div>
-    //     ))}
-    //   </div>
-    // </div>
+      <div className="pizza-container">
+        {pizzaRows.map((row, rowIndex) => (
+          <div key={`row-${rowIndex}`} className="pizza-row">
+            {row.map((pizza, pizzaIndex) => (
+              <PizzaCard
+                key={pizza.id}
+                pizza={pizza}
+                pizzaIndex={pizzaIndex + rowIndex * PIZZAS_PER_ROW}
+                // pizzaIndex={0}
+                setIndexPizzaOpen={setIndexPizzaOpen}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      < />
+    </div>
   );
 }
