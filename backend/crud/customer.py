@@ -1,13 +1,13 @@
 import sqlite3
 from datetime import datetime
 
-from db.database import get_connection
+from backend.db.database import get_connection
 
 
 class Customer:
 
-    def __init__(self):
-        self.conn = get_connection()
+    def __init__(self, conn):
+        self.conn = conn
         self.cursor = self.conn.cursor()
 
     def create(self, name: str, login: str, password: str, email: str, phone: str):

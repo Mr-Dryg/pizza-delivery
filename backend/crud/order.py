@@ -1,13 +1,13 @@
 import sqlite3
 from datetime import datetime
 
-from db.database import get_connection
+from backend.db.database import get_connection
 
 
 class Order:
 
-    def __init__(self):
-        self.conn = get_connection()
+    def __init__(self, conn):
+        self.conn = conn
         self.cursor = self.conn.cursor()
 
     def create(self, user_id: int, address: str, order_dict: dict[int, int]):

@@ -1,11 +1,11 @@
 import sqlite3
 
-from db.database import get_connection
+from backend.db.database import get_connection
 
 
 class Pizza:
-    def __init__(self):
-        self.conn = get_connection()
+    def __init__(self, conn):
+        self.conn = conn
         self.cursor = self.conn.cursor()
 
     def create(self, name: str, description: str, cost: float, available: bool = True) -> dict:

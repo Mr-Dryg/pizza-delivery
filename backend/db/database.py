@@ -1,5 +1,7 @@
 import sqlite3
 import os
+from contextlib import contextmanager
+
 
 def get_db_path():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -9,8 +11,14 @@ DB_PATH = get_db_path()
 db = sqlite3.connect(DB_PATH)
 c = db.cursor()
 
+@contextmanager
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS users (
