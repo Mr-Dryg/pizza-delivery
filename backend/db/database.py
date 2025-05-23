@@ -3,7 +3,7 @@ import os
 
 def get_db_path():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_dir, 'pizza.db')
+    return os.path.join(base_dir, 'pizza.db')  # This thing stores all data, not just pizza lol
 
 DB_PATH = get_db_path()
 db = sqlite3.connect(DB_PATH)

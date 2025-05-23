@@ -12,11 +12,13 @@ from crud.pizza import Pizza
 #     3: {"name": "тест пица 3", "price": 100000}
 # }
 # db_registration = Customer().create('Name', 'User', 'password', 'chtototam', '1234')
-# db_auth = Customer().auth(login='User', password='password')
+db_auth = Customer().auth(login='User', password='password')
 db_add_pizza = Pizza().create('pepperoni','hot like your mom', 200, True)
 Pizza().create('pepperoni2','hot like your mom2', 200, True)
 Pizza().create('pepperoni3','hot like your mom3', 200, True)
 # db_create_order = Order().create(1, 'moscow', {1: 2})
 # db_orders = Order().read(order_id=1)
 print(db_add_pizza)
+print(db_auth)
 print(Pizza().read_all())
+print(Customer().read(2))

@@ -3,13 +3,15 @@ from datetime import datetime, time
 from typing import List
 
 class DataLogIn(BaseModel):
-    email: str
+    login: str
     password: str
 
 class DataSignUp(BaseModel):
     name: str
-    email: str
+    login: str
     password: str
+    email: str
+    phone: str
 
 class PizzaOrderItem(BaseModel):
     pizza_id: int

@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, status, Request, Form
 from fastapi.security import OAuth2PasswordBearer
-from database import db_auth, db_orders, pizza_menu
+from crud.customer import Customer
+from crud.order import Order
+from crud.pizza import Pizza
 from models import DataSignUp, DataLogIn, PizzaOrderItem, OrderCreate
 from utils import hash_password, verify_password
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -29,18 +31,17 @@ app.add_middleware(
 
 @app.post('/api/sign-up', status_code=status.HTTP_201_CREATED)
 def signup(data: DataSignUp):
-    print("Регистрация с:", data.name, data.email, data.password)
-    if data.email in db_auth:
+    print("Регистрация с:", data.login, data.password)
+    registration_result = Customer().create(*data)
+    if registration_result["status"] == "error":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email уже зарегистрирован"
+            detail=registration_result["message"]
         )
-    else:
-        db_auth[data.email] = {
-            "name": data.name,
-            "hashed_password": hash_password(data.password),
-        }
+    elif registration_result["status"] == "success":
         return {"message": "Регистрация выполнена успешно"}
+    else:
+        return {"message": "Something went wrong in main.py/signup"}
 
 
 @app.post('/api/log-in')
@@ -66,6 +67,10 @@ def login(data: DataLogIn):
 async def get_menu():
     return pizza_menu
 
+@app.get("/api/heheheha")
+async def heheheha():
+    return "heheheha"
+    # https://paste.pics/TBSVB
 
 # Create order tied to user
 @app.post("/api/orders")

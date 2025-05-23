@@ -11,26 +11,41 @@ class Customer:
         self.cursor = self.conn.cursor()
 
     def create(self, name: str, login: str, password: str, email: str, phone: str):
+        result = {"status": "undefined", "message": "something went wrong in customer.py"}
         try:
             self.cursor.execute(
                 "INSERT INTO users (name, login, password, email, phone) VALUES (?, ?, ?, ?, ?)",
                 (name, login, password, email, phone)
             )
             self.conn.commit()
-            return 'ok'
+            result["status"] = "success"
+            result["message"] = "ok"
 
         except sqlite3.IntegrityError as e:
+            result["status"] = 'error'
             if "login" in str(e).lower():
-                return 'login exists'
+                result["message"] = 'login exists'
             elif "email" in str(e).lower():
-                return 'email exists'
+                result["message"] = 'email exists'
             elif "phone" in str(e).lower():
-                return 'phone exists'
-            return 'integrity error'
+                result["message"] = 'phone exists'
+            else:
+                result["message"] = 'integrity error'
+        return result
 
     def read(self, customer_id: int):
         self.cursor.execute("SELECT * FROM users WHERE user_id = ?", (customer_id,))
         return self.cursor.fetchone()
+
+    def read_login(self, customer_login: str):
+        i = 1
+        while True:
+            user = self.read(i)
+            if not user: break
+            if user[2] == customer_login:
+                return user
+            i += 1
+        return None
 
     def update(self):
         pass
@@ -88,11 +103,16 @@ class Customer:
         )
         user = self.cursor.fetchone()
 
+        result = {"status": "undefined", "message": "something went wrong in customer.py", "user_id": "-1"}
         if user:
-            return 'success'
+            result["status"] = "success"
+            result["message"] = "login and password are correct!"
+            result["user_id"] = user[0]
         else:
+            result["status"] = "error"
             self.cursor.execute("SELECT user_id FROM users WHERE login = ?", (login,))
             if self.cursor.fetchone():
-                return 'password incorrect'
+                result["message"] = "password incorrect"
             else:
-                return 'no such login'
+                result["message"] = "no such login"
+        return result
