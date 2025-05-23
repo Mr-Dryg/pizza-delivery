@@ -7,13 +7,10 @@ class Customer:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    def create(self, name, login, password, email, phone):
-        if len(password) < 8:
-            return 'password too short'
-
+    def create(self, name: str, login: str, password: str, email: str, phone: str):
         try:
             self.cursor.execute(
-                "INSERT INTO customer (name, login, password, email, phone) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO users (name, login, password, email, phone) VALUES (?, ?, ?, ?, ?)",
                 (name, login, password, email, phone)
             )
             self.conn.commit()
@@ -24,10 +21,12 @@ class Customer:
                 return 'login exists'
             elif "email" in str(e).lower():
                 return 'email exists'
+            elif "phone" in str(e).lower():
+                return 'phone exists'
             return 'integrity error'
 
-    def read(self, customer_id):
-        self.cursor.execute("SELECT * FROM customer WHERE rowid = ?", (customer_id,))
+    def read(self, customer_id: int):
+        self.cursor.execute("SELECT * FROM customer WHERE user_id = ?", (customer_id,))
         return self.cursor.fetchone()
 
     def update(self):
@@ -36,25 +35,52 @@ class Customer:
     def delete(self):
         pass
 
-    def show_purchase(self, customer_id, order_id):
+    def show_purchase(self, customer_id: int):
+        # Получаем все заказы клиента с датами
         self.cursor.execute(
-            "SELECT pizza_id FROM purchase WHERE user_id = ? AND order_id = ?",
-            (customer_id, order_id)
+            """SELECT order_id, order_time FROM order_list 
+            WHERE user_id = ? ORDER BY order_time DESC""",
+            (customer_id,)
         )
-        pizza_ids = self.cursor.fetchall()
+        orders = self.cursor.fetchall()
 
-        order = []
-        for (pizza_id,) in pizza_ids:
-            self.cursor.execute("SELECT name FROM pizzas WHERE raid = ?", (pizza_id,))
-            result = self.cursor.fetchone()
-            if result:
-                order.append(result[0])
+        if not orders:
+            return "У клиента нет заказов"
 
-        return order
+        all_orders_details = []
 
-    def auth(self, login, password):
+        for order in orders:
+            order_id, order_time = order
+            formatted_date = datetime.strptime(order_time, '%Y-%m-%d %H:%M:%S').strftime('%d.%m.%Y %H:%M')
+
+            self.cursor.execute(
+                """SELECT p.name, p.cost, oc.quantity 
+                FROM order_content oc
+                JOIN pizza p ON oc.pizza_id = p.pizza_id
+                WHERE oc.order_id = ?""",
+                (order_id,)
+            )
+            order_items = self.cursor.fetchall()
+
+            items_details = []
+            total_cost = 0
+
+            for item in order_items:
+                name, price, quantity = item
+                item_cost = price * quantity
+                items_details.append(f"{name} {price}₽ x {quantity} = {item_cost}₽")
+                total_cost += item_cost
+
+            order_str = f"Заказ №{order_id} от {formatted_date}:\n" + \
+                        "\n".join(f"  - {item}" for item in items_details) + \
+                        f"\nИтого: {total_cost}₽"
+            all_orders_details.append(order_str)
+
+        return "\n\n".join(all_orders_details)
+
+    def auth(self, login: str, password: str):
         self.cursor.execute(
-            "SELECT id FROM users WHERE name = ? AND password = ?",
+            "SELECT user_id FROM users WHERE login = ? AND password = ?",
             (login, password)
         )
         user = self.cursor.fetchone()
@@ -62,7 +88,7 @@ class Customer:
         if user:
             return True
         else:
-            self.cursor.execute("SELECT id FROM users WHERE name = ?", (login,))
+            self.cursor.execute("SELECT user_id FROM users WHERE login = ?", (login,))
             if self.cursor.fetchone():
                 return 'password incorrect'
             else:
