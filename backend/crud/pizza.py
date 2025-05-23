@@ -1,5 +1,6 @@
 import sqlite3
-from backend.db.database import get_connection
+
+from db.database import get_connection
 
 
 class Pizza:
@@ -96,8 +97,12 @@ class Pizza:
         pass
 
     def read_all(self):
-        self.cursor.execute(
-            """SELECT pizza_id, name, description, cost, available FROM pizza"""
-        )
-
-        return self.cursor.fetchone()
+        res = []
+        i = 1
+        while True:
+            fetched_pizza = self.read(i)
+            if fetched_pizza['status'] == 'error':
+                break
+            res.append(fetched_pizza['data'])
+            i += 1
+        return res

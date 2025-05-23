@@ -1,7 +1,8 @@
 import sqlite3
 from datetime import datetime
 
-from backend.db.database import get_connection
+from db.database import get_connection
+
 
 class Order:
 
