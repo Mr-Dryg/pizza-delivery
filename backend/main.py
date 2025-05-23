@@ -105,5 +105,5 @@ def get_pizzas():
             "price": 599,
             "image_url": "/static/pizzas/margherita.jpg"  # Путь к файлу
         }
-        for i in range(15)
+        for i in range(14)
     ]

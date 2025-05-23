@@ -1,7 +1,6 @@
 .pizza-container {
-  /* position: fixed;
-  z-index: 0;
-  left: 180px; */
+  position: absolute;
+  left: 170px;
   max-width: 1500px;
   margin: 0 auto;
   padding: 20px;
@@ -13,4 +12,10 @@
   /* justify-content: space-between; */
   margin-bottom: 30px;
   gap: 20px; /* Отступ между карточками */
+}
+
+.body-no-scroll {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
 }

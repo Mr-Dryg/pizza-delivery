@@ -41,7 +41,7 @@ export function PizzaModal({ pizza, setIndexPizzaOpen}) {
         />
         <p>Описание:</p>
         <p>{pizzaDescription}</p>
-        <button onClick={() => addToCart(product)} >В корзину за {`${pizza.price} ₽`}</button>
+        <button onClick={() => {addToCart(pizza); setIndexPizzaOpen(null)}} >В корзину за {pizza.price} ₽</button>
       </div>
     </div>
   );

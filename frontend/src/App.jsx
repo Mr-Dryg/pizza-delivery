@@ -1,7 +1,9 @@
+import { Provider } from 'react-redux';
+import { store } from './store';
 import { useState, useEffect } from 'react';
 import { AuthButton, AuthModal, LogOutButton } from './components/Auth.jsx';
 import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
-import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
+import { CartButton, Cart } from "./components/Cart.jsx";
 import './styles/App.css';
 
 export default function App() {
@@ -10,6 +12,7 @@ export default function App() {
   const [pizzas, setPizzas] = useState([]);
   const pizzaRows = [];
   const [indexPizzaOpen, setIndexPizzaOpen] = useState(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
 
   useEffect(() => {
@@ -24,16 +27,13 @@ export default function App() {
   }
 
   return (
-    <div>
+    <Provider store={store}>
       {isLoggedIn ?(
         <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
       ):(
         <AuthButton setIsAuthModalOpen={setIsAuthModalOpen}/>
       )}
       {isAuthModalOpen && (<AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>)}
-      {indexPizzaOpen != null && (
-        <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
-      )}
       <div className="pizza-container">
         {pizzaRows.map((row, rowIndex) => (
           <div key={`row-${rowIndex}`} className="pizza-row">
@@ -49,7 +49,11 @@ export default function App() {
           </div>
         ))}
       </div>
-      < />
-    </div>
+      {indexPizzaOpen != null && (
+        <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
+      )}
+      <CartButton setIsCartOpen={setIsCartOpen} />
+      <Cart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen}/>
+    </Provider>
   );
 }
