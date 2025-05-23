@@ -1,8 +1,9 @@
 import sqlite3
 from datetime import datetime
+from models import PizzaOrderItem
+from typing import List
 
-from backend.db.database import get_connection
-
+# from db.database import get_connection
 
 class Order:
 
@@ -10,9 +11,10 @@ class Order:
         self.conn = conn
         self.cursor = self.conn.cursor()
 
-    def create(self, user_id: int, address: str, order_dict: dict[int, int]):
+    def create(self, user_id: int, address: str, order_list: List[PizzaOrderItem]):
         try:
             total_cost = 0.0
+            order_dict = {pizza_id: pizza_amount for pizza_id, pizza_amount in order_list}
             pizza_ids = list(order_dict.keys())
 
             self.cursor.execute(
@@ -25,7 +27,7 @@ class Order:
 
             if len(pizza_prices) != len(order_dict):
                 missing_pizzas = set(order_dict.keys()) - set(pizza_prices.keys())
-                return f"Error: Pizza IDs {missing_pizzas} not found"
+                return {'status': 'error', 'message': f"Error: Pizza IDs {missing_pizzas} not found"}
 
             for pizza_id, quantity in order_dict.items():
                 total_cost += pizza_prices[pizza_id] * quantity
@@ -46,7 +48,7 @@ class Order:
                 )
 
             self.conn.commit()
-            return {'status': 'ok', 'order_id': order_id, 'total_cost': total_cost}
+            return {'status': 'success', 'order_id': order_id, 'total_cost': total_cost}
 
         except sqlite3.IntegrityError as e:
             self.conn.rollback()
@@ -55,7 +57,7 @@ class Order:
     def read(self, order_id: int):
         # Получаем основную информацию о заказе
         self.cursor.execute(
-            """SELECT ol.order_time, ol.address, ol.total_cost 
+            """SELECT ol.user_id, ol.order_time, ol.address, ol.total_cost 
             FROM order_list ol
             WHERE ol.order_id = ?""",
             (order_id,)
@@ -63,9 +65,9 @@ class Order:
         order_info = self.cursor.fetchone()
 
         if not order_info:
-            return f"Заказ №{order_id} не найден"
+            return {"status": "error", "message": f"Заказ №{order_id} не найден"}
 
-        order_time, address, total_cost = order_info
+        user_id, order_time, address, total_cost = order_info
         formatted_date = datetime.strptime(order_time, '%Y-%m-%d %H:%M:%S').strftime('%d.%m.%Y %H:%M')
 
         # Получаем состав заказа
@@ -95,8 +97,7 @@ class Order:
                 "\n".join(items_details) + "\n\n" +
                 f"Итоговая сумма: {total_cost}₽"
         )
-
-        return order_str
+        return {"status": "success", "order_id": order_id, "total_cost": total_cost, "user_id": user_id, "order_str": order_str}
 
     def update(self):
         pass
@@ -104,3 +105,11 @@ class Order:
     def delete(self):
         pass
 
+    def read_all(self):
+        i = 1
+        while True:
+            order = self.read(i)
+            if order["status"] == "error":
+                break
+            i += 1
+        return [self.read(j) for j in range(1, i)]

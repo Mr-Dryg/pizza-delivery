@@ -1,8 +1,8 @@
 import sqlite3
 from datetime import datetime
+from utils import hash_password, verify_password
 
-from backend.db.database import get_connection
-
+# from db.database import get_connection
 
 class Customer:
 
@@ -15,7 +15,7 @@ class Customer:
         try:
             self.cursor.execute(
                 "INSERT INTO users (name, login, password, email, phone) VALUES (?, ?, ?, ?, ?)",
-                (name, login, password, email, phone)
+                (name, login, hash_password(password), email, phone)
             )
             self.conn.commit()
             result["status"] = "success"
@@ -53,6 +53,7 @@ class Customer:
     def delete(self):
         pass
 
+    # OIAWJDHFUSHEOFSEOUF I ACCIDENTIALLY MADE THIS METHOD DIRECTLY IN MAIN.... FIXME
     def show_purchase(self, customer_id: int):
         # Получаем все заказы клиента с датами
         self.cursor.execute(

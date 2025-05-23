@@ -19,4 +19,4 @@ class PizzaOrderItem(BaseModel):
 
 class OrderCreate(BaseModel):
     items: List[PizzaOrderItem]
-    delivery_time_planned: time  # Time chosen by user
+    delivery_time_planned: datetime  # Time chosen by user

@@ -1,7 +1,6 @@
 import sqlite3
 
-from backend.db.database import get_connection
-
+# from db.database import get_connection
 
 class Pizza:
     def __init__(self, conn):

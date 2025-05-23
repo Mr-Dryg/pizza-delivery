@@ -1,5 +1,7 @@
 from typing import Dict, List
 from datetime import datetime  # cuz orders have planned time of arrival, real time of arrival, etc.
+
+import main
 from crud.customer import Customer
 from crud.order import Order
 from crud.pizza import Pizza
@@ -27,6 +29,8 @@ with get_connection() as conn:
     db_add_pizza = pizza.create('pepperoni','hot like your mom', 200, True)
     pizza.create('pepperoni2','hot like your mom2', 200, True)
     pizza.create('pepperoni3','hot like your mom3', 200, True)
+    pizza.create('Margaritas','cold like your dad', 250, False)
+    pizza.create('CheezyFour','splendid!', 250, False)
 
 # Для чтения данных
 with get_connection() as conn:
@@ -34,24 +38,23 @@ with get_connection() as conn:
     all_pizzas = pizza.read_all()
     print("All pizzas:")
     for pizza in all_pizzas:
-        print(dict(pizza))  # Конвертируем Row в словарь для читаемого вывода
+        print(pizza)
+
+with get_connection() as conn:
+    pizzas = Pizza(conn).read_all()
+    print("\nAll available pizzas:")
+    for piz in [pizza for pizza in pizzas if pizza['available']]:
+        print(piz)
 
 with get_connection() as conn:
     customer = Customer(conn)
-    customer_data = customer.read(2)
+    customer_data = customer.read(1)
     print("\nCustomer data:")
     print(dict(customer_data) if customer_data else "Customer not found")
-# customer = Customer()
-# db_registration = customer.create('Name', 'User', 'password', 'chtototam', '1234')
-# db_registration1 = customer.create('Name', 'User', 'password', 'chtototam', '1234')
 
-# db_auth = customer.auth(login='User', password='password')
-# db_add_pizza = Pizza().create('pepperoni','hot like your mom', 200, True)
-# Pizza().create('pepperoni2','hot like your mom2', 200, True)
-# Pizza().create('pepperoni3','hot like your mom3', 200, True)
-# # db_create_order = Order().create(1, 'moscow', {1: 2})
-# # db_orders = Order().read(order_id=1)
-# print(db_add_pizza)
-# print(db_auth)
-# print(Pizza().read_all())
-# print(customer.read(2))
+with get_connection() as conn:
+    orders = Order(conn)
+    for i in orders.read_all():
+        print(i)
+
+print(main.get_user_by_id(1))
