@@ -22,6 +22,10 @@ with get_connection() as conn:
 
 with get_connection() as conn:
     customer = Customer(conn)
+    db_change = customer.update(1, name='New name')
+
+with get_connection() as conn:
+    customer = Customer(conn)
     db_auth = customer.auth(login='User', password='password')
 
 with get_connection() as conn:

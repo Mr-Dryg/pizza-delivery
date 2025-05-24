@@ -47,8 +47,45 @@ class Customer:
             i += 1
         return None
 
-    def update(self):
-        pass
+    def update(self, user_id: int, **kwargs):
+        valid_fields = {'name', 'login', 'password', 'email', 'phone'}
+        updates = {k: v for k, v in kwargs.items() if k in valid_fields}
+
+        if not updates:
+            return {
+                'status': 'error',
+                'message': 'Нет допустимых полей для обновления'
+            }
+
+        try:
+            set_clause = ', '.join([f"{k} = ?" for k in updates.keys()])
+            values = list(updates.values())
+            values.append(user_id)
+
+            self.cursor.execute(
+                f"""UPDATE users SET {set_clause} 
+                    WHERE user_id = ?""",
+                values
+            )
+
+            if self.cursor.rowcount == 0:
+                return {
+                    'status': 'error',
+                    'message': f'User с ID {user_id} не найдена'
+                }
+
+            self.conn.commit()
+            return {
+                'status': 'success',
+                'message': f'User с ID {user_id} успешно обновлена',
+                'updated_fields': list(updates.keys())
+            }
+        except sqlite3.IntegrityError:
+            self.conn.rollback()
+            return {
+                'status': 'error',
+                'message': 'Ошибка: user с таким именем/email/phone уже существует'
+            }
 
     def delete(self):
         pass
