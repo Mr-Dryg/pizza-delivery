@@ -1,10 +1,41 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback  } from 'react';
 import { useCart } from '../hooks/useCart.js';
 import '../styles/Cart.css';
 
 export function Cart({ isCartOpen, setIsCartOpen }) {
   const { cart, removeFromCart, updateQuantity, totalNumber, totalPrice } = useCart();
-  
+  const [localQuantities, setLocalQuantities] = useState({});
+
+  // Инициализируем локальные количества при открытии корзины
+  useEffect(() => {
+    if (isCartOpen) {
+      const initialQuantities = {};
+      cart.forEach(item => {
+        initialQuantities[item.id] = item.quantity;
+      });
+      setLocalQuantities(initialQuantities);
+    }
+  }, [isCartOpen, cart]);
+
+  // Дебаунс для обновления количества
+  const debouncedUpdateQuantity = useCallback(
+    debounce((id, quantity) => {
+      updateQuantity(id, quantity);
+    }, 300),
+    [updateQuantity]
+  );
+
+  const handleQuantityChange = (id, newQuantity) => {
+    // Сначала обновляем локальное состояние
+    setLocalQuantities(prev => ({
+      ...prev,
+      [id]: newQuantity
+    }));
+    
+    // Затем запускаем дебаунсированное обновление
+    debouncedUpdateQuantity(id, newQuantity);
+  };
+
   useEffect(() => {
     if (isCartOpen) {
       const scrollY = window.scrollY;
@@ -25,29 +56,27 @@ export function Cart({ isCartOpen, setIsCartOpen }) {
 
   return (
     <div className='cart-overlay' onClick={() => setIsCartOpen(false)}>
-      <button 
-        className="close-button"
-      >
-        ×
-      </button>
+      <button className="cart-close-button">×</button>
       <div className="cart-content" onClick={(e) => e.stopPropagation()}>
-        <div className="cart-body" >
+        <div className="cart-body">
           <h1>{totalNumber} товаров за {totalPrice} ₽</h1>
           <ul className="cart">
             {cart.map(item => (
-              <li key={item.id} >
+              <li key={item.id}>
                 <h2 className='flex-header'>
-                  <img src={`http://localhost:8000${item.image_url}`}
+                  <img 
+                    src={`http://localhost:8000${item.image_url}`}
                     alt={item.name}
                   />
                   {item.name} ({item.price} ₽)
+                  <input
+                    className='quantity-input'
+                    type="number"
+                    defaultValue={localQuantities[item.id] || item.quantity}
+                    onBlur={(e) => handleQuantityChange(item.id, +e.target.value)}
+                    min="1"
+                  />
                 </h2>
-                <input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) => updateQuantity(item.id, +e.target.value)}
-                  min="1"
-                />
                 <button onClick={() => removeFromCart(item.id)}>
                   Удалить
                 </button>
@@ -62,6 +91,17 @@ export function Cart({ isCartOpen, setIsCartOpen }) {
       </div>
     </div>
   );
+}
+
+// Вспомогательная функция дебаунса
+function debounce(func, delay) {
+  let timeoutId;
+  return function(...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
 }
 
 export function CartButton({ setIsCartOpen }) {

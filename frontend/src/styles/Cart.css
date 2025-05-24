@@ -19,8 +19,8 @@ p {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* justify-content: center; */
+  /* align-items: center; */
   z-index: 9999;
 }
 
@@ -29,7 +29,8 @@ p {
   padding: 20px;
   border-radius: 8px;
   width: 600px;
-  position: relative;
+  position: absolute;
+  right: 0;
   z-index: 10000;
 }
 
@@ -56,9 +57,11 @@ p {
 }
 
 .cart-content input {
+  position: relative;
   display: block;
-  width: 280px;
-  margin-bottom: 10px;
+  width: 100px;
+  left: 50px;
+  /* margin-bottom: 10px; */
   padding: 8px;
 }
 
@@ -69,10 +72,10 @@ p {
   cursor: pointer;
 }
 
-.close-button {
-  position: relative;
-  top: -100px;
-  right: -400px;
+.cart-close-button {
+  position: absolute;
+  top: 45%;
+  right: 650px;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -104,7 +107,7 @@ p {
 
 .cart-body {
   overflow-y: auto;
-  max-height: 80vh;
+  height: 80vh;
 }
 
 .cart-footer {
