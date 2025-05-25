@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback  } from 'react';
 import { useCart } from '../hooks/useCart.js';
 import '../styles/Cart.css';
 
-export function Cart({ isCartOpen, setIsCartOpen }) {
-  const { cart, removeFromCart, updateQuantity, totalNumber, totalPrice } = useCart();
+export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted }) {
+  const { cart, removeFromCart, updateQuantity, totalNumber, totalPrice, clearCart } = useCart();
   const [localQuantities, setLocalQuantities] = useState({});
 
   // Инициализируем локальные количества при открытии корзины
@@ -58,6 +58,7 @@ export function Cart({ isCartOpen, setIsCartOpen }) {
     <div className='cart-overlay' onClick={() => setIsCartOpen(false)}>
       <button className="cart-close-button">×</button>
       <div className="cart-content" onClick={(e) => e.stopPropagation()}>
+        <button onClick={clearCart}>Очистить корзину</button>
         <div className="cart-body">
           <h1>{totalNumber} товаров за {totalPrice} ₽</h1>
           <ul className="cart">
@@ -86,7 +87,10 @@ export function Cart({ isCartOpen, setIsCartOpen }) {
         </div>
         <div className='cart-footer'>
           <p>{totalPrice} ₽</p>
-          <button className='to-order-button'>Заказать</button>
+          <button
+            className='to-order-button'
+            onClick={() => totalNumber && setIsOrderStarted(true)}
+          >Заказать</button>
         </div>
       </div>
     </div>

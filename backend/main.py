@@ -101,9 +101,46 @@ def get_pizzas():
     return [
         {
             "id": i + 1,
-            "name": "Маргарита",
+            "name": f"Маргарита{i + 1}",
             "price": 599,
             "image_url": "/static/pizzas/margherita.jpg"  # Путь к файлу
         }
-        for i in range(14)
+        for i in range(30)
     ]
+
+
+class Customer(BaseModel):
+    name: str
+    phone: str
+
+
+class Delivery(BaseModel):
+    address: str
+    date: str
+    time: str
+
+
+class Item(BaseModel):
+    id: int
+    quantity: int
+
+
+class Order(BaseModel):
+    customer: Customer
+    delivery: Delivery
+    products: list[Item]
+    price: int
+
+
+@app.post('/api/make-order')
+def make_order(order: Order):
+    # raise HTTPException(
+    #     status_code=status.HTTP_400_BAD_REQUEST,
+    #     detail="что-то пошло не так"
+    # )
+    print(f'Заказ:')
+    print(order.customer.name, order.customer.phone)
+    print(order.delivery.address, order.delivery.date, order.delivery.time)
+    print([(x.id, x.quantity) for x in order.products])
+    print(order.price)
+    return {'message': 'ok', 'orderId': 1}

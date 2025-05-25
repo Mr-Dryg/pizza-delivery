@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AuthButton, AuthModal, LogOutButton } from './components/Auth.jsx';
 import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
 import { CartButton, Cart } from "./components/Cart.jsx";
+import { Checkout } from './components/Checkout.jsx';
 import './styles/App.css';
 
 export default function App() {
@@ -13,7 +14,7 @@ export default function App() {
   const pizzaRows = [];
   const [indexPizzaOpen, setIndexPizzaOpen] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
+  const [isOrderStarted, setIsOrderStarted] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8000/pizzas/")
@@ -26,14 +27,30 @@ export default function App() {
     pizzaRows.push(pizzas.slice(i, i + PIZZAS_PER_ROW));
   }
 
+  useEffect(() => {
+    console.log("1", isOrderStarted, !isLoggedIn);
+    if (isOrderStarted && !isLoggedIn){
+      setIsAuthModalOpen(true);
+    }
+  }, [isOrderStarted]);
+
+  useEffect(() => {
+    console.log("2", !isAuthModalOpen);
+    if (!isAuthModalOpen && !isLoggedIn) {
+      setIsOrderStarted(false);
+    }
+  }, [isAuthModalOpen])
+
   return (
     <Provider store={store}>
-      {isLoggedIn ?(
+      {isLoggedIn ? (
         <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
       ):(
         <AuthButton setIsAuthModalOpen={setIsAuthModalOpen}/>
       )}
-      {isAuthModalOpen && (<AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>)}
+      {isAuthModalOpen && (
+        <AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>
+      )}
       <div className="pizza-container">
         {pizzaRows.map((row, rowIndex) => (
           <div key={`row-${rowIndex}`} className="pizza-row">
@@ -42,7 +59,6 @@ export default function App() {
                 key={pizza.id}
                 pizza={pizza}
                 pizzaIndex={pizzaIndex + rowIndex * PIZZAS_PER_ROW}
-                // pizzaIndex={0}
                 setIndexPizzaOpen={setIndexPizzaOpen}
               />
             ))}
@@ -53,7 +69,10 @@ export default function App() {
         <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
       )}
       <CartButton setIsCartOpen={setIsCartOpen} />
-      <Cart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen}/>
+      <Cart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} setIsOrderStarted={setIsOrderStarted}/>
+      {isOrderStarted && isLoggedIn && !isAuthModalOpen && (
+        <Checkout setIsOrderStarted={setIsOrderStarted} />
+      )}
     </Provider>
   );
 }

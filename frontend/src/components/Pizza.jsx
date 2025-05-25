@@ -33,7 +33,7 @@ export function PizzaModal({ pizza, setIndexPizzaOpen}) {
       >
         ×
       </button>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="pizza-modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{pizza.name}</h2>
         <img 
           src={`http://localhost:8000${pizza.image_url}`}

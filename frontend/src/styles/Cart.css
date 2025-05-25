@@ -21,17 +21,18 @@ p {
   display: flex;
   /* justify-content: center; */
   /* align-items: center; */
-  z-index: 9999;
+  z-index: 5000;
 }
 
 .cart-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 600px;
+  width: 580px;
   position: absolute;
   right: 0;
   z-index: 10000;
+  height: 96vh;
 }
 
 .cart-content img {
@@ -107,7 +108,7 @@ p {
 
 .cart-body {
   overflow-y: auto;
-  height: 80vh;
+  height: 81vh;
 }
 
 .cart-footer {
@@ -116,4 +117,5 @@ p {
   padding: 10px;
   margin-top: 15px;
   width: 550px;
+  height: 8vh;
 }
