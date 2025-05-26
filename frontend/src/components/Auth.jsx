@@ -2,16 +2,6 @@ import { useState, useCallback } from 'react';
 import '../styles/Auth.css';
 import '../styles/Modal.css';
 
-export function AuthButton({ setIsAuthModalOpen }) {
-  return (
-    <button 
-      className="auth-button"
-      onClick={() => setIsAuthModalOpen(true)}
-    >
-      Войти
-    </button>
-  );
-}
 
 function LogInModal({ 
   email, 
@@ -223,16 +213,5 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
         )}
       </div>
     </div>
-  );
-}
-
-export function LogOutButton({ setIsLoggedIn }) {
-  return (
-    <button 
-      className="auth-button"
-      onClick={() => setIsLoggedIn(false)}
-    >
-      Выйти
-    </button>
   );
 }

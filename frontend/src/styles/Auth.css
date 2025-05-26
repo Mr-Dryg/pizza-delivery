@@ -1,7 +1,7 @@
 .auth-button {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  position: relative;
+  /* top: 20px;
+  right: 20px; */
   padding: 8px 16px;
   cursor: pointer;
   z-index: 1000;

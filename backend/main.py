@@ -143,4 +143,62 @@ def make_order(order: Order):
     print(order.delivery.address, order.delivery.date, order.delivery.time)
     print([(x.id, x.quantity) for x in order.products])
     print(order.price)
-    return {'message': 'ok', 'orderId': 1}
+    digits = '0123456789'
+    return {
+        'message': 'ok',
+        'orderId': 1,
+        'orderNumber': f"{''.join(random.choices(digits, k=4))}-{''.join(random.choices(digits, k=4))}"
+    }
+
+
+import random
+
+orders = []
+orders_short = []
+
+@app.get('/orders/')
+def get_orders():
+    global orders, orders_short
+    num_orders = 20
+    
+    orders = []
+    orders_short = []
+    digits = '0123456789'
+
+    for i in range(num_orders):
+        num_products = random.randint(5, 25)
+        
+        order = {
+            'orderId': i + 1,
+            'orderNumber': f"{''.join(random.choices(digits, k=4))}-{''.join(random.choices(digits, k=4))}",
+            'delivery': {
+                'address': 'г. Москва, ул. Острякова, 15А, под.1, кв. 13',
+                'date': '25.05.2025',
+                'time': f'17:0{i % 10}'
+            },
+            'products': [
+                {
+                    'id': j + 1,
+                    'name': f'Маргарита{j + 1}',
+                    'quantity': random.randint(1, 10),
+                    'price': random.randint(500, 1000),
+                    "image_url": "/static/pizzas/margherita.jpg"
+                } for j in range(num_products)
+            ],
+            'price': random.randint(500, 3000)
+        }
+        order_short = {
+            'orderId': i + 1,
+            'orderNumber': f"{''.join(random.choices(digits, k=4))}-{''.join(random.choices(digits, k=4))}",
+            'date': '25.05.2025',
+            'price': random.randint(500, 3000)
+        }
+        orders.append(order)
+        orders_short.append(order_short)
+    
+    return orders_short
+
+@app.get('/orders/{orderId}')
+def get_orders(orderId: int):
+    if 0 < orderId and orderId <= len(orders):
+        return orders[orderId - 1]

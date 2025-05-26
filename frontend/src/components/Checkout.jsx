@@ -46,7 +46,7 @@ const formatPhoneNumber = (input) => {
 
 export function Checkout({ setIsOrderStarted }) {
   const [orderStatus, setOrderStatus] = useState('checkout'); // checkout -> loading -> (success || error)
-  const [orderId, setOrderId] = useState(null);
+  const [orderNumber, setOrderNumber] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   const Delivery_Time = 30;
@@ -250,7 +250,7 @@ export function Checkout({ setIsOrderStarted }) {
 
       // 6. Успешный заказ
       setOrderStatus('success');
-      setOrderId(data.orderId);
+      setOrderNumber(data.orderNumber);
       
       // 7. Очистка корзины (если нужно)
       clearCart();
@@ -383,7 +383,7 @@ export function Checkout({ setIsOrderStarted }) {
         {orderStatus === 'success' && (
           <div className="order-status success">
             <h3>✅ Заказ успешно оформлен!</h3>
-            <p>Номер вашего заказа: <strong>#{orderId}</strong></p>
+            <p>Номер вашего заказа: <strong>#{orderNumber}</strong></p>
             <p>Мы свяжемся с вами для подтверждения.</p>
             <button 
               onClick={() => setIsOrderStarted(false)}

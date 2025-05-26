@@ -109,11 +109,7 @@ function debounce(func, delay) {
 }
 
 export function CartButton({ setIsCartOpen }) {
-  // Вариант 1: Используем кастомный хук useCart (рекомендуется)
   const { totalNumber, totalPrice } = useCart();
-
-  // Или Вариант 2: Берём данные напрямую из Redux
-  // const { totalNumber, totalPrice } = useSelector((state) => state.cart);
 
   return (
     <button

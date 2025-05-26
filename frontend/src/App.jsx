@@ -1,10 +1,11 @@
 import { Provider } from 'react-redux';
 import { store } from './store';
 import { useState, useEffect } from 'react';
-import { AuthButton, AuthModal, LogOutButton } from './components/Auth.jsx';
+import { AuthModal } from './components/Auth.jsx';
 import { PizzaCard, PizzaModal } from "./components/Pizza.jsx";
 import { CartButton, Cart } from "./components/Cart.jsx";
 import { Checkout } from './components/Checkout.jsx';
+import { OrdersList } from './components/OrdersList.jsx';
 import './styles/App.css';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
   const [indexPizzaOpen, setIndexPizzaOpen] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrderStarted, setIsOrderStarted] = useState(false);
+  const [isOrdersListOpen, setIsOrdersListOpen] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8000/pizzas/")
@@ -43,11 +45,26 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      {isLoggedIn ? (
-        <LogOutButton setIsLoggedIn={setIsLoggedIn}/>
-      ):(
-        <AuthButton setIsAuthModalOpen={setIsAuthModalOpen}/>
-      )}
+      <div className='menu'>
+        {isLoggedIn ? (
+          <>
+            <button onClick={() => setIsOrdersListOpen(true)}>История заказов</button>
+            <button 
+              className="auth-button"
+              onClick={() => setIsLoggedIn(false)}
+            >
+              Выйти
+            </button>
+          </>
+        ):(
+          <button 
+            className="auth-button"
+            onClick={() => setIsAuthModalOpen(true)}
+          >
+            Войти
+          </button>
+        )}
+      </div>
       {isAuthModalOpen && (
         <AuthModal setIsAuthModalOpen={setIsAuthModalOpen} setIsLoggedIn={setIsLoggedIn}/>
       )}
@@ -73,6 +90,7 @@ export default function App() {
       {isOrderStarted && isLoggedIn && !isAuthModalOpen && (
         <Checkout setIsOrderStarted={setIsOrderStarted} />
       )}
+      <OrdersList isOrdersListOpen={isOrdersListOpen} setIsOrdersListOpen={setIsOrdersListOpen} />
     </Provider>
   );
 }
