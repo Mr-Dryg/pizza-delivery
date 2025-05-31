@@ -4,16 +4,13 @@ from typing import List
 from db.database import get_connection
 from crud.pizza import Pizza
 
-class DataLogIn(BaseModel):
-    login: str
-    password: str
-
 class DataSignUp(BaseModel):
     name: str
     login: str
     password: str
     email: str
     phone: str
+    # TODO: add payment data
 
 all_toppings = {  # {id: (name, price)}
     1: ("Cheese", 0),
@@ -59,8 +56,9 @@ class PizzaOrderItem(BaseModel):
 
     def calculate_price(self) -> int:
         with get_connection() as conn:
-            return (Pizza(conn).read(self.pizza_id)['cost'] + sum(i[1] for i in self.pizza_toppings.get_toppings())) * all_sizes[self.pizza_size][1]
+            return (Pizza(conn).read(self.pizza_id)['cost'] + sum(i[1] for i in self.pizza_toppings.get_toppings())) * all_sizes[self.pizza_size][1] * self.quantity
 
 class OrderCreate(BaseModel):
     items: List[PizzaOrderItem]
-    delivery_time_planned: datetime  # Time chosen by user
+    address: str
+    delivery_time_planned: str  # Time chosen by user

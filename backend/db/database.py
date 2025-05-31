@@ -45,13 +45,16 @@ c.execute("""CREATE TABLE IF NOT EXISTS order_list (
     user_id INTEGER NOT NULL,
     total_cost REAL NOT NULL,
     address TEXT NOT NULL,
-    order_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    order_time TEXT NOT NULL,
+    current_status TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 )""")
 
 c.execute("""CREATE TABLE IF NOT EXISTS order_content (
     order_id INTEGER NOT NULL,
     pizza_id INTEGER NOT NULL,
+    toppings INTEGER NOT NULL,
+    size INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     item_cost REAL NOT NULL,
     FOREIGN KEY (order_id) REFERENCES order_list(order_id),
