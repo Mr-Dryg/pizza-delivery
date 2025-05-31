@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.12",
+    "openpyxl>=3.1.5",
     "passlib>=1.7.4",
     "uvicorn>=0.34.2",
 ]

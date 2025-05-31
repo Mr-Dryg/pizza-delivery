@@ -48,7 +48,8 @@ class Pizza:
                 'name': pizza[1],
                 'description': pizza[2],
                 'cost': pizza[3],
-                'available': bool(pizza[4])
+                'available': bool(pizza[4]),
+                'image': f'/static/pizzas/{pizza[0]}.jpg'
             }
         }
 

@@ -61,4 +61,4 @@ with get_connection() as conn:
     for i in orders.read_all():
         print(i)
 
-print(main.get_user_by_id(1))
+# print(main.get_user_by_id(1))

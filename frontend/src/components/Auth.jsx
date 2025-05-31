@@ -1,16 +1,8 @@
 import { useState, useCallback } from 'react';
-import './Auth.css';
+import '../styles/Auth.css';
+import '../styles/Modal.css';
+import config from '../config.js';
 
-export function AuthButton({setIsModalOpen}) {
-  return (
-    <button 
-      className="auth-button"
-      onClick={() => setIsModalOpen(true)}
-    >
-      Войти
-    </button>
-  );
-}
 
 function LogInModal({ 
   email, 
@@ -28,7 +20,7 @@ function LogInModal({
     <>
       <h2>Вход</h2>
       <form onSubmit={handleLogIn}>
-        <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} />
+        <input type="text" value={email} placeholder="Номер телефона или почта" onChange={handleEmailChange} />
         <input type="password" value={password} placeholder="Пароль" onChange={handlePasswordChange} />
         <button type="submit" >Войти</button>
         <button type="button" onClick={handleSignUp} >Зарегистрироваться</button>
@@ -52,9 +44,11 @@ function LogInModal({
 function SignUpModal({
   name,
   email,
+  phone,
   password,
   handleNameChange,
   handleEmailChange,
+  handlePhoneChange,
   handlePasswordChange,
   handleSignUp,
   signSuccess,
@@ -68,6 +62,7 @@ function SignUpModal({
       <form onSubmit={handleSignUp}>
         <input type="text" value={name} placeholder="Имя" onChange={handleNameChange} />
         <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} />
+        <input type="tel" value={phone} placeholder="Номер телефона" onChange={handlePhoneChange} />
         <input type="password" value={password} placeholder="Пароль" onChange={handlePasswordChange} />
         <button type="submit" >Зарегистрироваться</button>
       </form>
@@ -87,10 +82,11 @@ function SignUpModal({
   );
 }
 
-export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
+export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
   const [isLogInModal, setIsLogInModal] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [signSuccess, setSignSuccess] = useState(false);
   const [signError, setSignError] = useState(null);
@@ -101,6 +97,10 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
 
   const handleEmailChange = useCallback((event) => {
     setEmail(event.target.value);
+  }, []);
+
+  const handlePhoneChange = useCallback((event) => {
+    setPhone(event.target.value);
   }, []);
 
   const handlePasswordChange = useCallback((event) => {
@@ -115,13 +115,15 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
     setSignError(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/log-in', {
+      const response = await fetch(`${config.API_URL}/api/log-in`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ "login": email, password })
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         console.log('Данные успешно отправлены!');
@@ -129,11 +131,12 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
         setEmail('');
         setPassword('');
         setIsLoggedIn(true);
+        localStorage.setItem('jwtToken', data.token);
+        console.log('JWT', data.token)
       } else {
         console.error('Ошибка при отправке данных:', response.status);
-        const errorData = await response.json();
-        console.log(errorData)
-        setSignError(errorData.detail || "Ошибка входа");
+        console.log(data)
+        setSignError(data.detail || "Ошибка входа");
       }
     } catch (error) {
       console.error('Ошибка сети:', error);
@@ -153,25 +156,29 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
     setSignError(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/sign-up', {
+      const response = await fetch(`${config.API_URL}/api/sign-up`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, phone, password })
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         console.log('Данные успешно отправлены!');
         setSignSuccess(true);
         setName('');
         setEmail('');
+        setPhone('');
         setPassword('');
         setIsLoggedIn(true);
+        localStorage.setItem('jwtToken', data.token);
+        console.log('JWT:', data.token);
       } else {
         console.error('Ошибка при отправке данных:', response.status);
-        const errorData = await response.json();
-        setSignError(errorData.detail || "Ошибка регистрации");
+        setSignError(data.detail || "Ошибка регистрации");
       }
     } catch (error) {
       console.error('Ошибка сети:', error);
@@ -181,14 +188,13 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
 
   const handleCloseSuccessMessage = () => {
     setSignSuccess(false);
-    setIsModalOpen(false);
+    setIsAuthModalOpen(false);
   };
 
   return (
-    <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+    <div className="modal-overlay" onClick={() => setIsAuthModalOpen(false)}>
       <button 
         className="close-button"
-        onClick={() => setIsModalOpen(false)}
       >
         ×
       </button>
@@ -210,9 +216,11 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
           <SignUpModal
             name={name}
             email={email}
+            phone={phone}
             password={password}
             handleNameChange={handleNameChange}
             handleEmailChange={handleEmailChange}
+            handlePhoneChange={handlePhoneChange}
             handlePasswordChange={handlePasswordChange}
             handleSignUp={handleSignUp}
             signSuccess={signSuccess}
@@ -223,16 +231,5 @@ export function AuthModal({setIsModalOpen, setIsLoggedIn}) {
         )}
       </div>
     </div>
-  );
-}
-
-export function LogOutButton({ setIsLoggedIn }) {
-  return (
-    <button 
-      className="auth-button"
-      onClick={() => setIsLoggedIn(false)}
-    >
-      Выйти
-    </button>
   );
 }
