@@ -63,7 +63,7 @@ class Customer:
             values.append(user_id)
 
             self.cursor.execute(
-                f"""UPDATE users SET {set_clause} 
+                f"""UPDATE users SET {set_clause}
                     WHERE user_id = ?""",
                 values
             )

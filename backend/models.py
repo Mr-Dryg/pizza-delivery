@@ -4,13 +4,24 @@ from typing import List
 from db.database import get_connection
 from crud.pizza import Pizza
 
+class ChangeUserData(BaseModel):
+    field_name: str
+    new_value: str
+
+    def items(self):
+        return [self.field_name, self.new_value]
+
+class DataLogIn(BaseModel):
+    login: str
+    password: str
+
 class DataSignUp(BaseModel):
     name: str
     login: str
     password: str
     email: str
     phone: str
-    # TODO: add payment data
+    # TODO card_number: str
 
 all_toppings = {  # {id: (name, price)}
     1: ("Cheese", 0),
@@ -62,3 +73,26 @@ class OrderCreate(BaseModel):
     items: List[PizzaOrderItem]
     address: str
     delivery_time_planned: str  # Time chosen by user
+
+# Idk where to put this, not utils i guess, so it goes here lol
+class FixedQueue:
+    def __init__(self, maxlen):
+        self.maxlen = maxlen
+        self.data = []
+
+    def append(self, item):
+        if len(self.data) >= self.maxlen:
+            self.data.pop(0)  # Delete oldest element
+        self.data.append(item)
+
+    def __repr__(self):
+        return f"FixedQueue({self.data}, maxlen={self.maxlen})"
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]

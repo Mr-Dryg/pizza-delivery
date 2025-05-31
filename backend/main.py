@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from db.database import get_connection
 from crud.customer import Customer
 from crud.order import Order
 from crud.pizza import Pizza
-from models import DataSignUp, PizzaOrderItem, OrderCreate
+from models import DataSignUp, DataLogIn, PizzaOrderItem, OrderCreate, FixedQueue, ChangeUserData
 from utils import hash_password, verify_password
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,6 +34,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/log-in")
+token_blacklist = FixedQueue(2000)  # Deleted non-expired tokens
 
 # TODO: Move this to utils.py probably
 def create_access_token(user_id: int):
@@ -42,6 +43,8 @@ def create_access_token(user_id: int):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def verify_token(token: str):
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return int(payload.get("sub"))  # Returns user_id
@@ -72,11 +75,11 @@ def signup(data: DataSignUp) -> dict:
             )
 
 # Logging in
-@app.post('/api/log-in', response_model=dict)
-def login(data: OAuth2PasswordRequestForm = Depends()) -> dict:
-    print("Вход с:", data.username, data.password)
+@app.post('/api/log-in')
+def login(data: DataLogIn):
+    print("Вход с:", data.login, data.password)
     with get_connection() as conn:
-        login_result = Customer(conn).auth(data.username, data.password)
+        login_result = Customer(conn).auth(data.login, data.password)
 
         if login_result["status"] == "success":
             token = create_access_token(login_result["user_id"])
@@ -101,8 +104,29 @@ def login(data: OAuth2PasswordRequestForm = Depends()) -> dict:
                 detail=login_result["message"]
             )
 
+@app.post("/api/logout")
+def logout(token: str = Depends(oauth2_scheme)):
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
+    token_blacklist.append(token)
+    return {"message": "Logged out"}
+
+@app.post("/api/change_data")
+def change_user_data(change_data: ChangeUserData, token: str = Depends(oauth2_scheme)):
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
+    user_id = verify_token(token)
+    with get_connection() as conn:
+        cust = Customer(conn)
+        if change_data[0] == "password": change_data[1] = hash_password(change_data[1])
+        cust.update(user_id, k=change_data.items())
+    return {"status": "success"}
+
+
 @app.get("/me")
 def read_me(token: str = Depends(oauth2_scheme)) -> dict:
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
     user_id = verify_token(token)
     with get_connection() as conn:
         return dict(Customer(conn).read(user_id))
@@ -123,19 +147,28 @@ def get_pizza(pizza_id: int) -> dict :
 # User's order history
 @app.get("/api/orders")
 def get_orders(token: str = Depends(oauth2_scheme)) -> list:
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
     user_id = verify_token(token)
     with (get_connection() as conn):
         return [order for order in Order(conn).read_all() if order["user_id"] == user_id]
 
-@app.get("/api/orders")
-def get_order(token: str = Depends(oauth2_scheme)) -> list:
+@app.get("/api/order")
+def get_order(order_id: int, token: str = Depends(oauth2_scheme)) -> list:
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
     user_id = verify_token(token)
     with get_connection() as conn:
-        return [order for order in Order(conn).read_all() if order["user_id"] == user_id]
+        order = Order(conn).read(order_id)
+        if order["user_id"] != user_id:
+            return []
+        return order
 
 # Create order tied to user
 @app.post("/api/orders")
 def create_order(order: OrderCreate, token: str = Depends(oauth2_scheme)) -> dict:
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token revoked")
     user_id = verify_token(token)
     with get_connection() as conn:
         orders = Order(conn)
