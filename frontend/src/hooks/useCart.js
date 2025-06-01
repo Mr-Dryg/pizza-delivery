@@ -10,9 +10,9 @@ export function useCart() {
     totalPrice,
     totalNumber,
     addToCart: (product) => dispatch(addToCart(product)),
-    removeFromCart: (productId) => dispatch(removeFromCart(productId)),
-    updateQuantity: (productId, newQuantity) => 
-      dispatch(updateQuantity({ productId, newQuantity })),
+    removeFromCart: (product) => dispatch(removeFromCart(product)),
+    updateQuantity: (product, newQuantity) => 
+      dispatch(updateQuantity({ product, newQuantity })),
     clearCart: () => dispatch(clearCart()),
   };
 }

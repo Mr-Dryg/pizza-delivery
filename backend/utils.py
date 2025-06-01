@@ -1,4 +1,4 @@
-# Not sure if I want this as a separate from main, but why not, tbh stole this part from gpt anyways
+# Not sure if I want this as a separate from main, but why not, tbh stole this part from gpt anyway
 
 from passlib.hash import pbkdf2_sha256
 

@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback  } from 'react';
 import { useCart } from '../hooks/useCart.js';
 import '../styles/Cart.css';
 import config from '../config.js';
+import PizzaToppings from '../models/PizzaToppings.js';
 
-export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted }) {
+export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted, toppings }) {
   const { cart, removeFromCart, updateQuantity, totalNumber, totalPrice, clearCart } = useCart();
   const [localQuantities, setLocalQuantities] = useState({});
 
@@ -12,7 +13,7 @@ export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted }) {
     if (isCartOpen) {
       const initialQuantities = {};
       cart.forEach(item => {
-        initialQuantities[item.pizza_id] = item.quantity;
+        initialQuantities[item] = item.quantity;
       });
       setLocalQuantities(initialQuantities);
     }
@@ -20,21 +21,20 @@ export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted }) {
 
   // Дебаунс для обновления количества
   const debouncedUpdateQuantity = useCallback(
-    debounce((pizza_id, quantity) => {
-      updateQuantity(pizza_id, quantity);
+    debounce((pizza, quantity) => {
+      updateQuantity(pizza, quantity);
     }, 300),
     [updateQuantity]
   );
 
-  const handleQuantityChange = (pizza_id, newQuantity) => {
+  const handleQuantityChange = (pizza, newQuantity) => {
     // Сначала обновляем локальное состояние
     setLocalQuantities(prev => ({
       ...prev,
-      [pizza_id]: newQuantity
+      [pizza]: newQuantity
     }));
-    
     // Затем запускаем дебаунсированное обновление
-    debouncedUpdateQuantity(pizza_id, newQuantity);
+    debouncedUpdateQuantity(pizza, newQuantity);
   };
 
   useEffect(() => {
@@ -56,45 +56,89 @@ export function Cart({ isCartOpen, setIsCartOpen, setIsOrderStarted }) {
   }
 
   return (
-    <div className='cart-overlay' onClick={() => setIsCartOpen(false)}>
-      <button className="cart-close-button">×</button>
-      <div className="cart-content" onClick={(e) => e.stopPropagation()}>
-        <button onClick={clearCart}>Очистить корзину</button>
-        <div className="cart-body">
-          <h1>{totalNumber} товаров за {totalPrice} ₽</h1>
-          <ul className="cart">
-            {cart.map(item => (
-              <li key={item.pizza_id}>
-                <h2 className='flex-header'>
-                  <img 
-                    src={`${config.API_URL}${item.image}`}
-                    alt={item.name}
-                  />
-                  {item.name} ({item.cost} ₽)
-                  <input
-                    className='quantity-input'
-                    type="number"
-                    defaultValue={item.quantity || localQuantities[item.pizza_id]}
-                    onBlur={(e) => handleQuantityChange(item.pizza_id, +e.target.value)}
-                    min="1"
-                  />
-                </h2>
-                <button onClick={() => removeFromCart(item.pizza_id)}>
-                  Удалить
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className='cart-footer'>
-          <p>{totalPrice} ₽</p>
-          <button
-            className='to-order-button'
-            onClick={() => totalNumber && setIsOrderStarted(true)}
-          >Заказать</button>
-        </div>
-      </div>
+<div className='cart-overlay' onClick={() => setIsCartOpen(false)}>
+  <div className="cart-content" onClick={(e) => e.stopPropagation()}>
+    <button className="cart-close-button" onClick={() => setIsCartOpen(false)}>×</button>
+    
+    <div className="cart-header">
+      <h2>Корзина</h2>
+      <button className="clear-cart-button" onClick={clearCart}>Очистить корзину</button>
     </div>
+
+    <div className="cart-body">
+      <div className="cart-summary">
+        <p>{totalNumber} {totalNumber === 1 ? 'товар' : totalNumber < 5 ? 'товара' : 'товаров'} на сумму {totalPrice} ₽</p>
+      </div>
+      
+      <ul className="cart-list">
+        {cart.map(item => {
+          const toppingsManager = new PizzaToppings(toppings);
+          toppingsManager.bitToppings = item.toppings;
+          const selectedToppings = toppingsManager.getToppings(true);
+          const totalPrice = (item.quantity || 1) * item.cost;
+
+          return (
+            <li key={`${item.pizza_id}-${item.size}-${item.toppings}`} className="cart-item">
+              <img 
+                src={`${config.API_URL}/${item.image}`}
+                alt={item.name}
+                className="cart-item-image"
+              />
+              
+              <div className="cart-item-details">
+                <div className="cart-item-info">
+                  <h3 className="cart-item-name">{item.name}</h3>
+                  <span className="cart-item-size">
+                    {item.size === 'small' ? 'Маленькая' : 
+                    item.size === 'medium' ? 'Средняя' : 'Большая'}
+                  </span>
+                </div>
+                
+                {selectedToppings.length > 0 && (
+                  <p className="cart-item-toppings">
+                    Добавки: {selectedToppings.map(t => t.name).join(', ')}
+                  </p>
+                )}
+              </div>
+              
+              <div className="cart-item-controls">
+                <input
+                  className="cart-item-quantity"
+                  type="number"
+                  defaultValue={item.quantity}
+                  onBlur={(e) => handleQuantityChange(item, +e.target.value)}
+                  min="1"
+                />
+                <span>× {item.cost} ₽</span>
+                <span className="cart-item-price">= {totalPrice} ₽</span>
+                <button 
+                  onClick={() => removeFromCart(item)}
+                  className="remove-button"
+                >
+                  ×
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div className='cart-footer'>
+      <div className="cart-total">
+        <span>Итого:</span>
+        <span className="total-price">{totalPrice} ₽</span>
+      </div>
+      <button
+        className='to-order-button'
+        onClick={() => totalNumber && setIsOrderStarted(true)}
+        disabled={!totalNumber}
+      >
+        Оформить заказ
+      </button>
+    </div>
+  </div>
+</div>
   );
 }
 

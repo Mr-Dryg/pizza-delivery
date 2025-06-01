@@ -94,59 +94,59 @@ class Customer:
     def delete(self):
         pass
 
-    # OIAWJDHFUSHEOFSEOUF I ACCIDENTIALLY MADE THIS METHOD DIRECTLY IN MAIN.... FIXME
-    def show_purchase(self, customer_id: int):
-        # Получаем все заказы клиента с датами
-        self.cursor.execute(
-            """SELECT order_id, order_time FROM order_list 
-            WHERE user_id = ? ORDER BY order_time DESC""",
-            (customer_id,)
-        )
-        orders = self.cursor.fetchall()
-
-        if not orders:
-            return "У клиента нет заказов"
-
-        all_orders_details = []
-
-        for order in orders:
-            order_id, order_time = order
-            formatted_date = datetime.strptime(order_time, '%Y-%m-%d %H:%M:%S').strftime('%d.%m.%Y %H:%M')
-
-            self.cursor.execute(
-                """SELECT p.name, p.cost, oc.quantity 
-                FROM order_content oc
-                JOIN pizza p ON oc.pizza_id = p.pizza_id
-                WHERE oc.order_id = ?""",
-                (order_id,)
-            )
-            order_items = self.cursor.fetchall()
-
-            items_details = []
-            total_cost = 0
-
-            for item in order_items:
-                name, price, quantity = item
-                item_cost = price * quantity
-                items_details.append(f"{name} {price}₽ x {quantity} = {item_cost}₽")
-                total_cost += item_cost
-
-            order_str = f"Заказ №{order_id} от {formatted_date}:\n" + \
-                        "\n".join(f"  - {item}" for item in items_details) + \
-                        f"\nИтого: {total_cost}₽"
-            all_orders_details.append(order_str)
-
-        return "\n\n".join(all_orders_details)
+    # OIAWJDHFUSHEOFSEOUF I ACCIDENTIALLY MADE THIS METHOD DIRECTLY IN MAIN....
+    # def show_purchase(self, customer_id: int):
+    #     # Получаем все заказы клиента с датами
+    #     self.cursor.execute(
+    #         """SELECT order_id, order_time FROM order_list
+    #         WHERE user_id = ? ORDER BY order_time DESC""",
+    #         (customer_id,)
+    #     )
+    #     orders = self.cursor.fetchall()
+    #
+    #     if not orders:
+    #         return "У клиента нет заказов"
+    #
+    #     all_orders_details = []
+    #
+    #     for order in orders:
+    #         order_id, order_time = order
+    #         formatted_date = datetime.strptime(order_time, '%Y-%m-%d %H:%M:%S').strftime('%d.%m.%Y %H:%M')
+    #
+    #         self.cursor.execute(
+    #             """SELECT p.name, p.cost, oc.quantity
+    #             FROM order_content oc
+    #             JOIN pizza p ON oc.pizza_id = p.pizza_id
+    #             WHERE oc.order_id = ?""",
+    #             (order_id,)
+    #         )
+    #         order_items = self.cursor.fetchall()
+    #
+    #         items_details = []
+    #         total_cost = 0
+    #
+    #         for item in order_items:
+    #             name, price, quantity = item
+    #             item_cost = price * quantity
+    #             items_details.append(f"{name} {price}₽ x {quantity} = {item_cost}₽")
+    #             total_cost += item_cost
+    #
+    #         order_str = f"Заказ №{order_id} от {formatted_date}:\n" + \
+    #                     "\n".join(f"  - {item}" for item in items_details) + \
+    #                     f"\nИтого: {total_cost}₽"
+    #         all_orders_details.append(order_str)
+    #
+    #     return "\n\n".join(all_orders_details)
 
     def auth(self, login: str, password: str):
         self.cursor.execute(
-            "SELECT password, user_id FROM users WHERE (email = ? OR phone = ?)",
-            (login, login)
+            "SELECT password, user_id FROM users WHERE (login = ? or email = ? OR phone = ?)",
+            (login, login, login)
         )
         user = self.cursor.fetchone()
         result = {"status": "undefined", "message": "something went wrong in customer.py"}
-        print(user[0], hash_password(password), verify_password(password, user[0]))
-        if verify_password(password, user[0]):
+        # print(user[0], hash_password(password), verify_password(password, user[0]))
+        if user and verify_password(password, user[0]):
             result["status"] = "success"
             result["message"] = "login and password are correct!"
             result["user_id"] = user[1]

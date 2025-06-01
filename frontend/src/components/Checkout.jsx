@@ -20,7 +20,7 @@ export const formatPhoneNumber = (input) => {
     prefix = '8';
     cleanValue = cleanValue.substring(1);
   } else if (cleanValue) {
-    prefix = '8';
+    prefix = '+7';
   }
 
   // Ограничиваем длину номера (10 цифр без префикса)
@@ -48,7 +48,7 @@ export const formatPhoneNumber = (input) => {
 
 export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
   const [orderStatus, setOrderStatus] = useState('checkout'); // checkout -> loading -> (success || error)
-  const [orderNumber, setOrderNumber] = useState(null);
+  const [orderNumber, setOrderNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const Delivery_Time = 30;
@@ -58,19 +58,55 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
-  const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [errors, setErrors] = useState({
     name: '',
     phoneNumber: '',
     address: '',
-    date: '',
     time: ''
   });
 
   useEffect(() => {
-    setName('Юзер');
-    setPhoneNumber(formatPhoneNumber('89162681533'));
+    async function fetchData() {
+      try {
+        const response = await fetch(`${config.API_URL}/api/me`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+          },
+        });
+
+        if (response.status === 401) {
+          console.error('Ошибка 401: Требуется авторизация');
+          localStorage.removeItem('jwtToken');
+          setIsAuthModalOpen(true);
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Проверяем Content-Type перед вызовом .json()
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new TypeError("Ожидался JSON, но получили " + contentType);
+        }
+
+        const data = await response.json();
+
+        setName(data.name);
+        setPhoneNumber(formatPhoneNumber(data.phone));
+        // setAddress(data.address);
+
+      } catch (error) {
+        // 8. Обработка ошибок
+        setOrderStatus('error');
+        setErrorMessage(error.message);
+        console.error('Order error:', error);
+      }
+    }
+    fetchData();
   }, [])
 
   const getCurrentDateTime = () => {
@@ -78,18 +114,16 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
     const minDeliveryTime = new Date(now.getTime() + Delivery_Time * 60000);
     
     return {
-      minDate: now.toISOString().split('T')[0],
       minTime: `${minDeliveryTime.getHours().toString().padStart(2, '0')}:${minDeliveryTime.getMinutes().toString().padStart(2, '0')}`,
       currentTime: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
     };
   };
 
-  const { minDate, minTime, currentTime } = getCurrentDateTime();
+  const { minTime, currentTime } = getCurrentDateTime();
 
   useEffect(() => {
-    setDate(minDate);
     setTime(minTime);
-  }, [minDate, minTime]);
+  }, [minTime]);
 
   const handleNameChange = useCallback((event) => {
     setName(event.target.value);
@@ -115,14 +149,6 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
     setErrors(prev => ({ ...prev, address: '' }));
   }, []);
 
-  const handleDateChange = useCallback((event) => {
-    setDate(event.target.value);
-    setErrors(prev => ({ ...prev, date: '' }));
-    if (event.target.value === minDate) {
-      setTime(minTime);
-    }
-  }, [minDate, minTime]);
-
   const handleTimeChange = useCallback((event) => {
     setTime(event.target.value);
     setErrors(prev => ({ ...prev, time: '' }));
@@ -133,7 +159,6 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
       name: '',
       phoneNumber: '',
       address: '',
-      date: '',
       time: ''
     };
 
@@ -165,40 +190,22 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
       newErrors.address = 'Введите адрес';
       isValid = false;
     }
-    // else if (address.trim().length < 10) {
-    //   newErrors.address = 'Адрес слишком короткий';
-    //   isValid = false;
-    // }
-
-    if (!date) {
-      newErrors.date = 'Выберите дату';
+      
+    if (!time) {
+      newErrors.time = 'Выберите время';
       isValid = false;
     } else {
-      const selectedDate = new Date(date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const [hours, minutes] = time.split(':').map(Number);
+      const now = new Date();
+      const minDeliveryTime = new Date(now.getTime() + Delivery_Time * 60000);
+      minDeliveryTime.setSeconds(0, 0);
       
-      if (selectedDate < today) {
-        newErrors.date = 'Дата не может быть в прошлом';
+      const selectedTime = new Date();
+      selectedTime.setHours(hours, minutes, 0, 0);
+      
+      if (selectedTime < minDeliveryTime) {
+        newErrors.time = `Ближайшее время доставки: ${minDeliveryTime.getHours()}:${minDeliveryTime.getMinutes().toString().padStart(2, '0')}`;
         isValid = false;
-      } else if (selectedDate.toDateString() === new Date().toDateString()) {
-        if (!time) {
-          newErrors.time = 'Выберите время';
-          isValid = false;
-        } else {
-          const [hours, minutes] = time.split(':').map(Number);
-          const now = new Date();
-          const minDeliveryTime = new Date(now.getTime() + Delivery_Time * 60000);
-          minDeliveryTime.setSeconds(0, 0);
-          
-          const selectedTime = new Date();
-          selectedTime.setHours(hours, minutes, 0, 0);
-          
-          if (selectedTime < minDeliveryTime) {
-            newErrors.time = `Ближайшее время доставки: ${minDeliveryTime.getHours()}:${minDeliveryTime.getMinutes().toString().padStart(2, '0')}`;
-            isValid = false;
-          }
-        }
       }
     }
 
@@ -223,12 +230,16 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
         },
         delivery: {
           address: address.trim(),
-          date,
           time
         },
         items: cart.map(item => ({
           pizza_id: item.pizza_id,
-          quantity: item.quantity
+          pizza_size: item.size,
+          pizza_toppings: {
+            bit_toppings: item.toppings,
+          },
+          quantity: item.quantity,
+          cost: item.cost
         })),
         price: totalPrice
       };
@@ -322,41 +333,26 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
               </label>
               
               <label>
-                Дата доставки:
-                <input 
-                  type="date" 
-                  value={date} 
-                  min={minDate}
-                  onChange={handleDateChange}
-                  className={errors.date ? 'error' : ''}
-                />
-                {errors.date && <span className="error-message">{errors.date}</span>}
-              </label>
-              
-              <label>
                 Время доставки:
                 <input 
                   type="time" 
                   value={time} 
-                  min={date === minDate ? minTime : undefined}
+                  min={minTime}
                   onChange={handleTimeChange}
                   className={errors.time ? 'error' : ''}
                 />
                 {errors.time && <span className="error-message">{errors.time}</span>}
-                {date === minDate && (
-                  <div className="time-note">
-                    Сегодня ближайшее время доставки: {minTime}
-                  </div>
-                )}
+                <div className="time-note">
+                  Ближайшее время доставки: {minTime}
+                </div>
               </label>
             </div>
             
             <div className='summary-section'>
               <h3>{totalNumber} товаров за {totalPrice} ₽</h3>
-              {/* <ul className='cart-items'> */}
               <ul style={{"listStyleType":"none", "paddingLeft": "0px", "overflowY": "auto", "height": "50vh"}}>
                 {cart.map(item => (
-                  <li key={item.pizza_id}>
+                  <li key={`${item.pizza_id}-${item.size}-${item.toppings}`} className="cart-item">
                     <p>
                       {item.name} {item.quantity} × {item.price} ₽
                     </p>

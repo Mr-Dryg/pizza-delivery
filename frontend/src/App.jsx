@@ -18,11 +18,21 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrderStarted, setIsOrderStarted] = useState(false);
   const [isOrdersListOpen, setIsOrdersListOpen] = useState(false);
+  const [toppings, setToppings] = useState({});
+  const [sizes, setSizes] = useState({});
 
   useEffect(() => {
     fetch(`${config.API_URL}/api/menu/1`)
       .then((res) => res.json())
       .then((data) => setPizzas(data));
+    
+    fetch(`${config.API_URL}/api/menu/toppings`)
+      .then((res) => res.json())
+      .then((data) => setToppings(data));
+    
+    fetch(`${config.API_URL}/api/menu/sizes`)
+      .then((res) => res.json())
+      .then((data) => setSizes(data));
   }, []);
 
   const PIZZAS_PER_ROW = 4;
@@ -84,14 +94,14 @@ export default function App() {
         ))}
       </div>
       {indexPizzaOpen != null && (
-        <PizzaModal pizza={pizzas[indexPizzaOpen]} setIndexPizzaOpen={setIndexPizzaOpen} />
+        <PizzaModal pizza={pizzas[indexPizzaOpen]} toppings={toppings} sizes={sizes} setIndexPizzaOpen={setIndexPizzaOpen} />
       )}
       <CartButton setIsCartOpen={setIsCartOpen} />
-      <Cart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} setIsOrderStarted={setIsOrderStarted}/>
+      <Cart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} setIsOrderStarted={setIsOrderStarted} toppings={toppings} />
       {isOrderStarted && isLoggedIn && !isAuthModalOpen && (
-        <Checkout setIsOrderStarted={setIsOrderStarted} />
+        <Checkout setIsOrderStarted={setIsOrderStarted} setIsAuthModalOpen={setIsAuthModalOpen} />
       )}
-      <OrdersList isOrdersListOpen={isOrdersListOpen} setIsOrdersListOpen={setIsOrdersListOpen} />
+      <OrdersList isOrdersListOpen={isOrdersListOpen} setIsOrdersListOpen={setIsOrdersListOpen} toppings={toppings} />
     </Provider>
   );
 }

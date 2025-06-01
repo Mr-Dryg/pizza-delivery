@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { formatPhoneNumber } from './Checkout.jsx';
 import '../styles/Auth.css';
 import '../styles/Modal.css';
 import config from '../config.js';
@@ -62,7 +63,14 @@ function SignUpModal({
       <form onSubmit={handleSignUp}>
         <input type="text" value={name} placeholder="Имя" onChange={handleNameChange} />
         <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} />
-        <input type="tel" value={phone} placeholder="Номер телефона" onChange={handlePhoneChange} />
+        <input type="tel" placeholder='+7 XXX XXX XX-XX'
+          value={formatPhoneNumber(phone)}
+          onChange={handlePhoneChange}
+          onPaste={(e) => {
+            e.preventDefault();
+            setPhoneNumber(formatPhoneNumber(e.clipboardData.getData('text')));
+          }}
+        />
         <input type="password" value={password} placeholder="Пароль" onChange={handlePasswordChange} />
         <button type="submit" >Зарегистрироваться</button>
       </form>

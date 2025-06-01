@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import '../styles/OrdersList.css';
 import '../styles/Order.css'
 import config from '../config.js';
+import PizzaToppings from '../models/PizzaToppings.js';
 
-function Order({ selectedOrderId, setSelectedOrderId }) {
+function Order({ selectedOrderId, setSelectedOrderId, toppings }) {
   const [order, setOrder] = useState({});
   const [error, setError] = useState(null);
 
@@ -68,22 +69,37 @@ function Order({ selectedOrderId, setSelectedOrderId }) {
           <div className="order-section">
             <h3>Состав заказа</h3>
             <div className="products-list">
-              {order.products?.map(product => (
-                <div key={product.pizza_id} className="product-item">
-                  <img 
-                    src={`http://127.0.0.1:8000${product.image_url}`}
-                    alt={product.name} 
-                    className="product-image"
-                  />
-                  <div className="product-info">
-                    <h4>{product.name}</h4>
-                    <p>{product.quantity} × {product.price.toLocaleString('ru-RU')} ₽</p>
+              {order.products?.map(product => {
+                const toppingsManager = new PizzaToppings(toppings);
+                toppingsManager.bitToppings = product.toppings;
+                const selectedToppings = toppingsManager.getToppings(true);
+                return (
+                  <div key={`${product.pizza_id}-${product.size}-${product.toppings}`} className="product-item">
+                    <img 
+                      src={`http://127.0.0.1:8000${product.image_url}`}
+                      alt={product.name} 
+                      className="product-image"
+                    />
+                    <div className="product-info">
+                      <h4>
+                        {product.name} ({
+                          product.size === 'small' ? 'Маленькая' :
+                          product.size === 'medium' ? 'Средняя' : 'Большая'
+                        })
+                      </h4>
+                      {selectedToppings.length > 0 && (
+                        <p className="cart-item-toppings">
+                          Добавки: {selectedToppings.map(t => t.name).join(', ')}
+                        </p>
+                      )}
+                      <p>{product.quantity} × {product.price.toLocaleString('ru-RU')} ₽</p>
+                    </div>
+                    <div className="product-total">
+                      {(product.quantity * product.price).toLocaleString('ru-RU')} ₽
+                    </div>
                   </div>
-                  <div className="product-total">
-                    {(product.quantity * product.price).toLocaleString('ru-RU')} ₽
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -96,7 +112,7 @@ function Order({ selectedOrderId, setSelectedOrderId }) {
   );
 }
 
-export function OrdersList({ isOrdersListOpen, setIsOrdersListOpen }) {
+export function OrdersList({ isOrdersListOpen, setIsOrdersListOpen, toppings }) {
   const [orders, setOrders] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +200,7 @@ export function OrdersList({ isOrdersListOpen, setIsOrdersListOpen }) {
                   <thead>
                     <tr>
                       <th className="table-header">Номер заказа</th>
+                      <th className="table-header">Статус заказа</th>
                       <th className="table-header">Дата</th>
                       <th className="table-header">Цена</th>
                     </tr>
@@ -196,6 +213,7 @@ export function OrdersList({ isOrdersListOpen, setIsOrdersListOpen }) {
                         onClick={() => setSelectedOrderId(order.order_id)}
                       >
                         <td className="table-cell">{order.order_id}</td>
+                        <td className="table-cell">{order.order_status}</td>
                         <td className="table-cell">{order.delivery.date}</td>
                         <td className="table-cell price-cell">
                           {order.price.toLocaleString('ru-RU')} ₽
@@ -214,6 +232,7 @@ export function OrdersList({ isOrdersListOpen, setIsOrdersListOpen }) {
         <Order 
           selectedOrderId={selectedOrderId} 
           setSelectedOrderId={setSelectedOrderId} 
+          toppings={toppings}
         />
       )}
     </>

@@ -15,6 +15,16 @@ const loadCartWithTotals = () => {
 
 const initialState = loadCartWithTotals();
 
+function equal_pizzas({ item, product }) {
+  console.log('item: ', item);
+  console.log('product: ', product);
+  return (
+    item.pizza_id === product.pizza_id &&
+    item.toppings === product.toppings &&
+    item.size === product.size
+  );
+}
+
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
@@ -22,7 +32,7 @@ const cartSlice = createSlice({
     // Добавление товара
     addToCart: (state, action) => {
       const product = action.payload;
-      const existingItem = state.cart.find(item => item.pizza_id === product.pizza_id);
+      const existingItem = state.cart.find(item => equal_pizzas({ item, product }));
 
       if (existingItem) {
         existingItem.quantity += 1;
@@ -36,19 +46,19 @@ const cartSlice = createSlice({
 
     // Удаление товара
     removeFromCart: (state, action) => {
-      const productId = action.payload;
-      state.cart = state.cart.filter(item => item.pizza_id !== productId);
+      const product = action.payload;
+      state.cart = state.cart.filter(item => ! equal_pizzas({ item, product }));
       updateTotals(state);
     },
 
     // Изменение количества
     updateQuantity: (state, action) => {
-      const { productId, newQuantity } = action.payload;
-      const item = state.cart.find(item => item.pizza_id === productId);
+      const { product, newQuantity } = action.payload;
+      const item = state.cart.find(item => equal_pizzas({ item, product }));
 
       if (item) {
         if (newQuantity < 1) {
-          state.cart = state.cart.filter(item => item.pizza_id !== productId);
+          state.cart = state.cart.filter(item => ! equal_pizzas({ item, product }));
         } else {
           item.quantity = newQuantity;
         }

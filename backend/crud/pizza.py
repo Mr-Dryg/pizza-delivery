@@ -47,9 +47,12 @@ class Pizza:
                 'pizza_id': pizza[0],
                 'name': pizza[1],
                 'description': pizza[2],
+                'def_cost': pizza[3],
                 'cost': pizza[3],
+                'size': 'medium',
+                'toppings': 0,
                 'available': bool(pizza[4]),
-                'image': f'/static/pizzas/{pizza[0]}.jpg'
+                'image': f'static/pizzas/{pizza[0]}.jpg'
             }
         }
 
