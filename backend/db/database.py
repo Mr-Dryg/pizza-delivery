@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     email TEXT NOT NULL,
     phone TEXT NOT NULL,
+    address TEXT NOT NULL,
     UNIQUE (login, email, phone)
 )
 """)

@@ -24,7 +24,7 @@ class Order:
                 for pizza in order_list:
                     if not piz.read(pizza.pizza_id):
                         return {'status': 'error', 'message': f"Error: Pizza IDs {pizza.pizza_id} not found"}
-                    total_cost += pizza.cost
+                    total_cost += pizza.cost * pizza.quantity
             order_datetime = datetime.combine(date.today(), datetime.strptime(chosen_delivery_time, "%H:%M").time())
             self.cursor.execute(
                 "INSERT INTO order_list (user_id, total_cost, address, order_time, current_status) "

@@ -26,6 +26,13 @@ all_sizes = {  # {id: (size, price_mod)}
     'large': (35, 1.1)
 }
 
+class ChangeUserData(BaseModel):
+    field_name: str
+    new_value: str
+
+    def items(self):
+        return [self.field_name, self.new_value]
+
 class DataSignUp(BaseModel):
     name: str
     login: str | None = None
@@ -78,3 +85,26 @@ class OrderCreate(BaseModel):
     # address: str
     delivery: Delivery
     price: int
+
+# Idk where to put this, not utils i guess, so it goes here lol
+class FixedQueue:
+    def __init__(self, maxlen):
+        self.maxlen = maxlen
+        self.data = []
+
+    def append(self, item):
+        if len(self.data) >= self.maxlen:
+            self.data.pop(0)  # Delete oldest element
+        self.data.append(item)
+
+    def __repr__(self):
+        return f"FixedQueue({self.data}, maxlen={self.maxlen})"
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]

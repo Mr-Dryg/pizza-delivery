@@ -8,6 +8,7 @@ import { Checkout } from './components/Checkout.jsx';
 import { OrdersList } from './components/OrdersList.jsx';
 import './styles/App.css';
 import config from './config.js';
+import UserProfileEditor from './components/PersonalAccount.jsx';
 
 export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -20,6 +21,8 @@ export default function App() {
   const [isOrdersListOpen, setIsOrdersListOpen] = useState(false);
   const [toppings, setToppings] = useState({});
   const [sizes, setSizes] = useState({});
+  const [error, setError] = useState(null);
+  const [isPersonalAccountOpen, setIsPersonalAccountOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${config.API_URL}/api/menu/1`)
@@ -54,15 +57,44 @@ export default function App() {
     }
   }, [isAuthModalOpen])
 
+  const handleLogOut = async () => {
+    try {
+      const response = await fetch(`${config.API_URL}/api/log-out`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail);
+      }
+      setIsLoggedIn(false);
+      localStorage.removeItem('jwtToken');
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  if (error) return (
+    <div className="order-overlay" onClick={() => setError(null)}>
+      <div className="orders-content">
+        <div className="error-state">Ошибка: {error}</div>
+      </div>
+    </div>
+  );
+
   return (
     <Provider store={store}>
       <div className='menu'>
         {isLoggedIn ? (
           <>
+            {/* <button onClick={() => setIsPersonalAccountOpen(true)}>Линый кабинет</button> */}
             <button onClick={() => setIsOrdersListOpen(true)}>История заказов</button>
             <button 
               className="auth-button"
-              onClick={() => {setIsLoggedIn(false); localStorage.removeItem('jwtToken');}}
+              onClick={handleLogOut}
             >
               Выйти
             </button>
@@ -102,6 +134,9 @@ export default function App() {
         <Checkout setIsOrderStarted={setIsOrderStarted} setIsAuthModalOpen={setIsAuthModalOpen} />
       )}
       <OrdersList isOrdersListOpen={isOrdersListOpen} setIsOrdersListOpen={setIsOrdersListOpen} toppings={toppings} />
+      {/* {isPersonalAccountOpen && (
+        <UserProfileEditor setIsPersonalAccountOpen={setIsPersonalAccountOpen} />
+      )} */}
     </Provider>
   );
 }

@@ -69,7 +69,7 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch(`${config.API_URL}/api/me`, {
+        const response = await fetch(`${config.API_URL}/api/user-info`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -354,7 +354,7 @@ export function Checkout({ setIsOrderStarted, setIsAuthModalOpen }) {
                 {cart.map(item => (
                   <li key={`${item.pizza_id}-${item.size}-${item.toppings}`} className="cart-item">
                     <p>
-                      {item.name} {item.quantity} × {item.price} ₽
+                      {item.name} {item.quantity} × {item.cost} ₽ = {item.quantity * item.cost} ₽
                     </p>
                   </li>
                 ))}

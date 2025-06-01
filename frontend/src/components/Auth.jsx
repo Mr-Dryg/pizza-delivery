@@ -6,9 +6,9 @@ import config from '../config.js';
 
 
 function LogInModal({ 
-  email, 
+  login, 
   password,
-  handleEmailChange,
+  handleLoginChange,
   handlePasswordChange,
   handleLogIn,
   handleSignUp,
@@ -21,7 +21,7 @@ function LogInModal({
     <>
       <h2>Вход</h2>
       <form onSubmit={handleLogIn}>
-        <input type="text" value={email} placeholder="Номер телефона или почта" onChange={handleEmailChange} />
+        <input type="text" value={login} placeholder="Логин, номер телефона или почта" onChange={handleLoginChange} />
         <input type="password" value={password} placeholder="Пароль" onChange={handlePasswordChange} />
         <button type="submit" >Войти</button>
         <button type="button" onClick={handleSignUp} >Зарегистрироваться</button>
@@ -44,10 +44,12 @@ function LogInModal({
 
 function SignUpModal({
   name,
+  login,
   email,
   phone,
   password,
   handleNameChange,
+  handleLoginChange,
   handleEmailChange,
   handlePhoneChange,
   handlePasswordChange,
@@ -62,6 +64,7 @@ function SignUpModal({
       <h2>Регистрация</h2>
       <form onSubmit={handleSignUp}>
         <input type="text" value={name} placeholder="Имя" onChange={handleNameChange} />
+        <input type="text" value={login} placeholder="Логин" onChange={handleLoginChange} />
         <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} />
         <input type="tel" placeholder='+7 XXX XXX XX-XX'
           value={formatPhoneNumber(phone)}
@@ -93,6 +96,7 @@ function SignUpModal({
 export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
   const [isLogInModal, setIsLogInModal] = useState(true);
   const [name, setName] = useState('');
+  const [login, setLogin] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -101,6 +105,10 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
 
   const handleNameChange = useCallback((event) => {
     setName(event.target.value);
+  }, []);
+
+  const handleLoginChange = useCallback((event) => {
+    setLogin(event.target.value);
   }, []);
 
   const handleEmailChange = useCallback((event) => {
@@ -118,7 +126,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
   const handleLogIn = useCallback(async (event) => {
     event.preventDefault();
 
-    console.log('Вход с:', email, password);
+    console.log('Вход с:', login, password);
     setSignSuccess(false);
     setSignError(null);
 
@@ -128,7 +136,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "login": email, password })
+        body: JSON.stringify({ login, password })
       });
 
       const data = await response.json();
@@ -136,11 +144,11 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
       if (response.ok) {
         console.log('Данные успешно отправлены!');
         setSignSuccess(true);
-        setEmail('');
+        setLogin('');
         setPassword('');
         setIsLoggedIn(true);
         localStorage.setItem('jwtToken', data.token);
-        console.log('JWT', data.token)
+        // console.log('JWT', data.token)
       } else {
         console.error('Ошибка при отправке данных:', response.status);
         console.log(data)
@@ -150,7 +158,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
       console.error('Ошибка сети:', error);
       setSignError("Ошибка сети. Проверьте подключение к интернету.");
     }
-  }, [email, password]);
+  }, [login, password]);
 
   const handleSignUp = useCallback(async (event) => {
     event.preventDefault();
@@ -159,7 +167,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
       return;
     }
 
-    console.log('Регистрация с:', name, email, password);
+    console.log('Регистрация с:', name, login, email, password);
     setSignSuccess(false);
     setSignError(null);
 
@@ -169,7 +177,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, email, phone, password })
+        body: JSON.stringify({ name, login, email, phone, password })
       });
 
       const data = await response.json();
@@ -178,12 +186,13 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
         console.log('Данные успешно отправлены!');
         setSignSuccess(true);
         setName('');
+        setLogin('');
         setEmail('');
         setPhone('');
         setPassword('');
         setIsLoggedIn(true);
         localStorage.setItem('jwtToken', data.token);
-        console.log('JWT:', data.token);
+        // console.log('JWT:', data.token);
       } else {
         console.error('Ошибка при отправке данных:', response.status);
         setSignError(data.detail || "Ошибка регистрации");
@@ -192,7 +201,7 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
       console.error('Ошибка сети:', error);
       setSignError("Ошибка сети. Проверьте подключение к интернету.");
     }
-  }, [name, email, password, isLogInModal]);
+  }, [name, login, email, password, isLogInModal]);
 
   const handleCloseSuccessMessage = () => {
     setSignSuccess(false);
@@ -209,9 +218,9 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {isLogInModal ? (
           <LogInModal
-            email={email}
+            login={login}
             password={password}
-            handleEmailChange={handleEmailChange}
+            handleLoginChange={handleLoginChange}
             handlePasswordChange={handlePasswordChange}
             handleLogIn={handleLogIn}
             handleSignUp={handleSignUp}
@@ -223,10 +232,12 @@ export function AuthModal({setIsAuthModalOpen, setIsLoggedIn}) {
         ) : (
           <SignUpModal
             name={name}
+            login={login}
             email={email}
             phone={phone}
             password={password}
             handleNameChange={handleNameChange}
+            handleLoginChange={handleLoginChange}
             handleEmailChange={handleEmailChange}
             handlePhoneChange={handlePhoneChange}
             handlePasswordChange={handlePasswordChange}
