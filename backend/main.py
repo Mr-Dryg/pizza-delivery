@@ -118,8 +118,8 @@ def change_user_data(change_data: ChangeUserData, token: str = Depends(oauth2_sc
     user_id = verify_token(token)
     with get_connection() as conn:
         cust = Customer(conn)
-        if change_data[0] == "password": change_data[1] = hash_password(change_data[1])
-        cust.update(user_id, k=change_data.items())
+        if change_data.field_name == "password": change_data.new_value = hash_password(change_data.new_value)
+        cust.update(user_id, **{change_data.field_name: change_data.new_value})
     return {"status": "success"}
 
 
